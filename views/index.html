@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+
+<head>
+  <!-- Material Design Lite -->
+  <link rel='stylesheet' href='https://code.getmdl.io/1.3.0/material.indigo-pink.min.css'>
+  <!-- Material Design icon font -->
+  <link rel='stylesheet' href='https://fonts.googleapis.com/icon?family=Material+Icons'>
+  <!-- Import MDL JS Library -->
+  <script defer src=https://code.getmdl.io/1.3.0/material.min.js></script>
+</head>
+{{$editMode := .EditMode}}
+
+<body class='mdl-layout mdl-js-layout mdl-layout--fixed-header'>
+  <header class='mdl-layout__header'>
+    <div class='mdl-layout__header-row'>
+      <!-- Title -->
+      <span class='mdl-layout-title'>Wake-on-LAN Server</span>
+      <!-- Add spacer -->
+      <div class='mdl-layout-spacer'></div>
+      <!-- Navigation -->
+      <nav class='mdl-navigation'>
+        {{if .EditMode}}
+        <a href='#' onclick="document.getElementById('toggle').submit()" class='mdl-navigation__link'>Disable edit
+          mode</a>
+        {{else}}
+        <a href='#' onclick="document.getElementById('toggle').submit()" class='mdl-navigation__link'>Enable edit
+          mode</a>
+        {{end}}
+      </nav>
+    </div>
+  </header>
+
+  <main class='mdl-layout__content' style="padding-top: 20px;">
+    {{if .HasErrored}}
+    <!-- MDL-Karte erstellen -->
+    <div class="mdl-card mdl-shadow--2dp" style="width: fit-content; height: fit-content; margin: auto;">
+      <div class="mdl-card__title">
+        <h2 class="mdl-card__title-text">Error</h2>
+      </div>
+      <div class="mdl-card__supporting-text">
+        {{.LastError}}
+      </div>
+      <div class="mdl-card__actions mdl-card--border">
+        <button class="mdl-button mdl-js-button" onclick="this.parentNode.parentNode.style.display = 'none';">
+          Dismiss
+        </button>
+      </div>
+    </div>
+    {{end}}
+
+    <div style="width: fit-content; height: fit-content; margin: auto; padding-top: 20px;">
+      <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+        <thead>
+          <tr>
+            <th class="mdl-data-table__cell--non-numeric">Name</th>
+            <th class="mdl-data-table__cell--non-numeric">Mac</th>
+            <th class="mdl-data-table__cell--non-numeric">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Devices}}
+          <tr>
+            <td class="mdl-data-table__cell--non-numeric">{{.Name}}</td>
+            <td class="mdl-data-table__cell--non-numeric">{{.Mac}}</td>
+            <td class="mdl-data-table__cell--non-numeric">
+              {{if $editMode}}
+              <!-- Delete button -->
+              <form method="POST" action="/edit">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="name" value="{{.Name}}">
+                <button type=submit title="Delete device" id="{{.Name}}-delete-btn"
+                  onclick="return confirm('Are you sure you want to delete this device?');"
+                  class="mdl-button mdl-js-button mdl-button--icon">
+                  <i class="material-icons">delete</i>
+                </button>
+              </form>
+              {{else}}
+              <!-- Wake button -->
+              <form method="POST" action="/wake">
+                <input type="hidden" name="name" value="{{.Name}}">
+                <button type="submit" title="Wake device" id="{{.Name}}-wake-btn"
+                  class="mdl-button mdl-js-button mdl-button--icon">
+                  <i class="material-icons">power_settings_new</i>
+                </button>
+              </form>
+              {{end}}
+            </td>
+          </tr>
+          {{end}}
+          {{if $editMode}}
+          <tr>
+            <form method="POST" action="/edit">
+
+              <input type="hidden" name="action" value="add">
+              <td class="mdl-data-table__cell--non-numeric">
+                <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label'>
+                  <input class='mdl-textfield__input' type='text' id='name' name='name'>
+                  <label class='mdl-textfield__label' for='name'>Name</label>
+                </div>
+              </td>
+
+              <td class="mdl-data-table__cell--non-numeric">
+                <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label'>
+                  <input class='mdl-textfield__input' type='text' id='mac' name='mac'>
+                  <label class='mdl-textfield__label' for='mac'>MAC</label>
+                </div>
+              </td>
+              <td class="mdl-data-table__cell--non-numeric">
+                <button type="submit"
+                  class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">Add</button>
+              </td>
+            </form>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Toggle form -->
+    <form method=POST action=/toggle id=toggle></form>
+
+
+
+    </div><!-- container -->
+
+  </main><!-- main -->
+
+  <footer></footer><!-- footer -->
+
+</body><!-- body -->

@@ -1,0 +1,96 @@
+<head>
+  <!-- Material Design Lite -->
+  <link rel='stylesheet' href='https://code.getmdl.io/1.3.0/material.indigo-pink.min.css'>
+  <!-- Material Design icon font -->
+  <link rel='stylesheet' href='https://fonts.googleapis.com/icon?family=Material+Icons'>
+</head>
+
+<body class='mdl-layout mdl-js-layout mdl-layout--fixed-header'>
+<header class='mdl-layout__header'>
+  <div class='mdl-layout__header-row'>
+    <!-- Title -->
+    <span class='mdl-layout-title'>Wake-on-LAN Server</span>
+    <!-- Add spacer -->
+    <div class='mdl-layout-spacer'></div>
+    <!-- Navigation -->
+    <nav class='mdl-navigation mdl-layout--large-screen-only'>
+      {{if .EditMode}}
+      <a href='#' onclick="document.getElementById('toggle').submit()" class='mdl-navigation__link'>Disable edit mode</a>
+      {{else}}
+      <a href='#' onclick="document.getElementById('toggle').submit()" class='mdl-navigation__link'>Enable edit mode</a>
+      {{end}}
+    </nav>
+  </div>
+</header>
+
+<main class='mdl-layout__content'>
+  {{if .HasErrored}}
+  <div id="error" class="mdl-js-snackbar mdl-snackbar">
+    <div class="mdl-snackbar__text">{{.LastError}}</div>
+    <button class="mdl-snackbar__action" type="button"></button>
+  </div>
+  <script>
+    window.addEventListener('load', function() {
+      var snackbarContainer = document.querySelector('#error');
+      var data = {timeout: 3000};
+      snackbarContainer.MaterialSnackbar.showSnackbar(data);
+    });
+  </script>
+  {{end}}
+<div class='container'>
+{{if .EditMode}}
+<form method="POST" action="/edit">
+  <input type="hidden" name="action" value="add">
+  <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label'>
+    <input class='mdl-textfield__input' type='text' id='name' name='name'>
+    <label class='mdl-textfield__label' for='name'>Name</label>
+  </div>
+  <div class='mdl-textfield mdl-js-textfield mdl-textfield--floating-label'>
+    <input class='mdl-textfield__input' type='text' id='mac' name='mac'>
+    <label class='mdl-textfield__label' for='mac'>MAC</label>
+  </div>
+  <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">Add</button>
+</form>
+{{end}}
+<ul class="demo-list-icon mdl-list">
+  {{range .Devices}}
+    <li class="mdl-list__item">
+      <!-- Icon button -->
+      <span class="mdl-list__item-primary-content">
+        {{.Name}} - {{.Mac}}
+      </span>
+      <!-- Wake button -->
+      <form method="POST" action="/wake">
+        <input type="hidden" name="name" value="{{.Name}}">
+        <button type="submit" title="Wake device" id="{{.Name}}-wake-btn"
+          class="mdl-button mdl-js-button mdl-button--icon">
+          <i class="material-icons">power_settings_new</i>
+        </button>
+      </form> 
+      {{if .EditMode}}
+      <!-- Delete button -->
+      <form method="POST" action="/edit">
+        <input type="hidden" name="action" value="delete">
+        <input type="hidden" name="name" value="{{.Name}}">
+        <button type=submit title=Delete device id="{{.Name}}-delete-btn"
+          onclick="return confirm('Are you sure you want to delete this device?');"
+          class=mdl-button mdl-js-button mdl-button--icon><i
+            class=material-icons>delete</i></button>
+      </form> 
+      {{end}}
+    </li>
+  {{end}}
+</ul>
+
+<!-- Toggle form -->
+<form method=POST action=/toggle id=toggle></form>
+
+<!-- Import MDL JS Library -->
+<script defer src=https://code.getmdl.io/1.3.0/material.min.js></script>
+
+</div><!-- container -->
+</main><!-- main -->
+
+<footer></footer><!-- footer -->
+
+</body><!-- body -->
